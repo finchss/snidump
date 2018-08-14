@@ -13,14 +13,14 @@ bin/snidump: src/*
 
 bin/snidump_dbg: src/*
 	mkdir -p bin && \
-	gcc -I /root/PF_RING/userland/libpcap-1.8.1/ -D__DEBUG__=1 -Wall -ggdb \
+	gcc -I ../../libpcap-1.8.1/ -D__DEBUG__=1 -Wall -ggdb \
 		src/snidump.c src/tls.c src/http.c \
 		-lpcap -lpcre \
 		-o bin/snidump_dbg
 
 bin/snidump_noether: src/*
 	mkdir -p bin && \
-	gcc  -I /root/PF_RING/userland/libpcap-1.8.1/ -D__DEBUG__=0 -Wall \
+	gcc  -I ../../libpcap-1.8.1/ -D__DEBUG__=0 -Wall \
 		-D__NO_ETHERNET__ \
 		src/snidump.c src/tls.c src/http.c \
 		-lpcap -lpcre \
@@ -28,7 +28,7 @@ bin/snidump_noether: src/*
 
 bin/snidump_noether_dbg: src/*
 	mkdir -p bin && \
-	gcc  -I /root/PF_RING/userland/libpcap-1.8.1/ -D__DEBUG__=1 -Wall -ggdb \
+	gcc  -I ../../libpcap-1.8.1/ -D__DEBUG__=1 -Wall -ggdb \
 		-D__NO_ETHERNET__ \
 		src/snidump.c src/tls.c src/http.c \
 		-lpcap -lpcre \
