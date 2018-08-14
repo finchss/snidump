@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 #include <pcap/pcap.h>
 #include <pcre.h>
@@ -36,6 +37,7 @@ struct ether_header
 {
   uint8_t  ether_dhost[ETH_ALEN];
   uint8_t  ether_shost[ETH_ALEN];
+  uint32_t vlan;
   uint16_t ether_type;
 } __attribute__ ((__packed__));
 
@@ -140,6 +142,9 @@ uint16_t dst_port;
 
 uint8_t flag_sni_available;
 
+
+
+
 int sni_handler (uint8_t *host_name, uint16_t host_name_length) {
 	uint16_t i;
 
@@ -181,7 +186,6 @@ void my_pcap_handler (uint8_t *user, const struct pcap_pkthdr *header,
 	uint16_t payload_length;
 
 	uint16_t r;
-
 	if (header->caplen < header->len) {
 #if __DEBUG__
 		fprintf(stderr,
@@ -336,6 +340,7 @@ void my_pcap_handler (uint8_t *user, const struct pcap_pkthdr *header,
 void signal_handler (int signum)
 {
 	switch(signum) {
+		case SIGALRM:
 		case SIGTERM:
 		case SIGINT:
 		case SIGSEGV:
@@ -356,7 +361,6 @@ void signal_handler (int signum)
 	"(dst port 80 or dst port 443)"
 #define BPF bpf_s
 #define BPF_OPTIMIZE 1
-
 int main (int argc, char *argv[])
 {
 	/* Name of the network interface to capture from. */
@@ -393,14 +397,18 @@ int main (int argc, char *argv[])
 	memset(errbuf, 0, PCAP_ERRBUF_SIZE);
 
 	CPRINT_INIT
-
-	while ((i = getopt(argc, argv, "hf:pi:r:w:")) != -1) {
+	while ((i = getopt(argc, argv, "hf:pi:r:w:t:")) != -1) {
 		switch(i) {
+			case 't':
+				alarm(atoi(optarg));
+				fprintf(stderr,"[*] Time Limit set to %d seconds\n",atoi(optarg));
+				break;
 			case 'h':
 				fprintf(stderr,
 					"Use: %s [-h] [-f bpf] [-p] -i interface [-w dump.pcap]\n", argv[0]);
 				fprintf(stderr,
 					"Use: %s [-h] [-f bpf] [-p] -r trce.pcap [-w dump.pcap]\n", argv[0]);
+
 				return -1;
 				break;
 			case 'f':
@@ -523,6 +531,11 @@ int main (int argc, char *argv[])
 	act.sa_handler = signal_handler;
 	sigemptyset (&act.sa_mask);
 	act.sa_flags = 0;
+	if (sigaction(SIGALRM, &act, NULL)) {
+		perror("sigaction");
+		fprintf(stderr,
+			"[WARNING] Failed to set signal handler for SIGALRM.\n");
+	}
 
 	if (sigaction(SIGINT, &act, NULL)) {
 		perror("sigaction");
