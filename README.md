@@ -1,5 +1,6 @@
 To get the nscrub version running: 
 
+```
 git clone https://github.com/ntop/PF_RING
 cd PF_RING/userland
 make
@@ -7,7 +8,7 @@ cd examples
 git clone https://github.com/finchss/snidump
 cd snidump
 make
-
+```
 
 # snidump
 This program extracts the Server Name Indication (SNI) field from
